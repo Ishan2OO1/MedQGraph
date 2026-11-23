@@ -134,9 +134,13 @@ See [`src/README.md`](src/README.md).
 Built by **Ishan Chaudhary** and **Isaac Premkumar** as graduate research at
 Northeastern University.
 
-<!-- TODO: one honest sentence saying which parts were yours and which were
-     Isaac's. Your portfolio says you "architected" MedQGraph; this is the line
-     that has to support it. -->
+My part was the data pipeline, the LLM backend and the evaluation: the
+three-stage join that turns six MIMIC-IV modules into the 230,000-record
+integrated dataset, with its quality gates and FHIR normalisation; the GPT-4o
+integration that converts a natural-language question into schema-validated
+Cypher and a clinician-readable summary; and the testing behind the figures in
+[docs/benchmarks.md](docs/benchmarks.md), including the four-model
+Cypher-generation comparison.
 
 The poster in `docs/` carries its own author list — Isaac Premkumar, Ishan
 Chaudhary, Arasu Narayan and Divya Chaudhary — and that remains the
