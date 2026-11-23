@@ -1,71 +1,155 @@
 # Graph model
 
-Reconstructed from `data-creation-pipeline.drawio`, `complete-pipeline.drawio`
-and the project slides. **Check this against the Cypher in the loader before
-publishing** — the diagrams name the entities but not every property.
+Source: the MedQGraph paper (*Structuring Temporal Medical Knowledge from
+Clinical Narratives for AI-Driven Insights*), sections 3-5 and Appendix B.
 
-## Source
+## Source data
 
-MIMIC-IV v3.0 (PhysioNet, credentialed access). Six tables are used:
+MIMIC-IV v3.0 (PhysioNet, credentialed access), maintained by the MIT Laboratory
+for Computational Physiology. The full database holds 364,484 patients, 546,165
+admissions spanning 2008-2019, and over 95,000 ICU stays.
 
-| Table | Fields taken |
-|---|---|
-| `patients` | `subject_id`, gender, age, race |
-| `admissions` | `hadm_id`, admission type, location |
-| `prescriptions` | drug, dose, route |
-| `labevents` | test name, specimen |
-| `microbiologyevents` | organism, antibiotic |
-| `diagnoses_icd` | ICD code, severity |
+Six modules are used:
+
+| Module | Source tables | Join keys |
+|---|---|---|
+| Demographics | `patients` | `subject_id` |
+| Admissions | `admissions`, `transfers` | `subject_id`, `hadm_id` |
+| Medications | `prescriptions`, `pharmacy` | `hadm_id` |
+| Labs | `labevents`, `d_labitems` | `hadm_id` |
+| Microbiology | `microbiologyevents` | `hadm_id` |
+| Diagnoses | `diagnoses_icd`, `drgcodes` | `hadm_id` |
 
 ## Ingest
 
-1. `patients` JOIN `admissions` on `subject_id`
-2. join `prescriptions` on `hadm_id`
-3. join `labevents` on `hadm_id`
-4. join `microbiologyevents` on `hadm_id`
-5. join `diagnoses_icd` on `hadm_id`
-6. denormalise to one wide row per patient-plus-events
-7. quality pass: referential integrity, deduplication, range validation,
-   categorical standardisation
-8. CSV export, then parameterised Cypher creates nodes and relationships
+Three JOIN stages, then denormalisation:
 
-Resulting dataset: **230,000 records x 31 features**, covering **45,127
-patients** and **78,043 admissions**.
+1. **Patient-admission core.** `patients INNER JOIN admissions ON subject_id`,
+   producing 230,000 patient-admission pairs so every clinical event is
+   attributable to a patient and a hospitalisation.
+2. **Clinical events.** Sequential `LEFT JOIN`s append medications, labs,
+   microbiology cultures and diagnosis/DRG codes. LEFT rather than INNER so that
+   a pair survives when an event type is absent — which is why completeness
+   varies by module.
+3. **Denormalisation.** Flattened to one wide table, each row a clinical event
+   snapshot. This removes runtime joins from graph queries and allows batch
+   ingestion into Neo4j.
+
+Quality gates: referential integrity (100% of records hold valid `subject_id`
+and `hadm_id` links), deduplication preserving legitimate repeats such as daily
+medication orders and serial labs, range validation (`anchor_age` 18-89 per
+MIMIC-IV de-identification, severity and mortality 1-4, non-negative doses), and
+categorical standardisation of admission type, race and route.
+
+NULLs are preserved rather than imputed, so that a missing value becomes an
+absent edge instead of a fabricated relationship.
+
+## Final dataset
+
+| | |
+|---|---|
+| Total records | 230,000 |
+| Unique patients | 45,127 |
+| Unique admissions | 78,043 |
+| Features | 31 |
+| Records per patient | 5.1 avg |
+| Records per admission | 2.9 avg |
+| Temporal coverage | 2008-2019 |
+
+Coverage by module: demographics, admission details, medication administration,
+lab testing and diagnosis/severity are at 100%; microbiology at 14.8% (34,000
+records), since an absent culture means one was negative or never ordered.
+Overall field coverage 86.4%.
+
+Admission types: urgent 97,290 (42.3%), emergency 89,010 (38.7%), elective
+34,960 (15.2%), other 8,740 (3.8%). APR-DRG severity runs minor 18.5%, moderate
+34.2%, major 32.8%, extreme 14.5%.
+
+## FHIR normalisation
+
+Before graph ingestion, MIMIC-IV v3.0 and MIMIC-IV-ED are mapped to FHIR
+profiles following the MIMIC-IV-on-FHIR transformation, covering Patient,
+Encounter, Condition, Procedure, Medication, Observation, Specimen and
+Organization. Custom profiles reproduce MIMIC's own coding schema rather than
+remapping to SNOMED CT, LOINC or RxNorm, and ICU and ED encounters
+(`MimicEncounterICU`, `MimicEncounterED`) are linked back to the primary
+hospitalisation.
 
 ## Nodes
 
-`Patient`, `Admission`, `Diagnosis`, `Medication`, `Test`
+`Patient`, `Admission`, `Diagnosis`, `Medication`, `Procedure`, `Test`
 
-<!-- TODO: property list per node type, straight from the loader's Cypher. -->
+Created with `MERGE` on a stable key — `subject_id` for patients, `hadm_id` for
+admissions, `description` for diagnoses, `drug_name` for medications,
+`test_name` for tests (Appendix B, Figure 5).
 
 ## Relationships
 
-`HAD_ADMISSION`, `DIAGNOSED_WITH`, and others.
+`HAD_ADMISSION`, `DIAGNOSED_WITH`, `PRESCRIBED`, `UNDERWENT_TEST`,
+`HAS_MEDICAL_HISTORY`, `HAS_RISK`
 
-<!-- TODO: the full edge list, with direction and properties.
+Relationships are inferred from event co-occurrence within an admission, then
+sorted chronologically within each admission. Clinical concepts are connected by
+time-stamped edges, which is what makes the graph temporal rather than static.
 
-     This is the most important gap in the repo. The project is described as a
-     *temporal* knowledge graph, so the README needs to show exactly where time
-     is modelled: timestamps as edge properties, ordered event chains, or
-     validity intervals. Name it concretely.
-
-     Note the conflict to resolve: the poster's own Limitations section says
-     "limited to structured data; does not include clinical notes or temporal
-     relationships", while the body and the slides describe a Temporal Medical
-     Knowledge Graph. Decide which is accurate for the system as built and make
-     the repo, the poster and the portfolio say the same thing. -->
+<!-- TODO: one naming inconsistency to settle before the camera-ready and before
+     this repo's code lands. The schema given to the Cypher Generation Agent
+     (section 5.7.1) names HAD_ADMISSION / PRESCRIBED / UNDERWENT_TEST, and the
+     worked example uses those. The loader in Appendix B Figure 6 creates
+     HAS_ADMISSION / HAS_DIAGNOSIS / HAS_MEDICATION / HAS_TEST, and Figure 8's
+     caption uses HAS_MEDICATION. Both sets cannot be right. Pick one and make
+     the loader, the agent prompt and the figures agree. -->
 
 ## Query path
 
-A natural-language question is sent to GPT-4o together with a schema
-description, which returns a Cypher query and nothing else. The query runs
-against Neo4j; the rows come back to a second prompt that writes a plain-language
-answer, and a third prompt proposes three to five follow-up questions built from
-the relationships that the answer touched.
+Four GPT-4o agents run in sequence:
 
-LangChain embeddings back a vector search for similarity-based retrieval
-alongside the generated Cypher.
+1. **Query Understanding** — extracts clinical intent and entities from the
+   natural-language question.
+2. **Cypher Generation** — given a schema description and the question, returns
+   a syntactically valid Cypher query restricted to schema-present nodes and
+   properties, matching on `subject_id` when a patient ID is named. Queries are
+   validated for syntax, schema compliance, property existence and query cost
+   before execution; a validation failure triggers regeneration with structured
+   feedback.
+3. **Summarization** — turns rows into a clinician-readable summary, adapting
+   style by query type and flagging time-sensitive findings.
+4. **Recommendation** — proposes three to five follow-up questions built from
+   the relationships adjacent to the answer.
 
-<!-- TODO: two or three real question/answer pairs with the Cypher each one
-     produced. Figure 4 of the poster has one already: medications for patient
-     10000032. -->
+Context is carried across turns, so a user can reason in steps without knowing
+Cypher or the schema.
+
+LangChain embeddings place queries and graph entities in a shared vector space,
+giving similarity-based retrieval alongside the generated Cypher.
+
+## Worked example
+
+> **"Medications for patient 10000032"**
+
+```cypher
+MATCH (p:Patient {subject_id: 10000032})
+      -[:HAD_ADMISSION]->(a:Admission)
+      -[:PRESCRIBED]->(m:Medication)
+RETURN m.drug_name
+```
+
+Returns ten medications — furosemide, heparin, ipratropium bromide neb, nicotine
+patch, raltegravir, influenza vaccine quadrivalent, emtricitabine-tenofovir
+(Truvada), spironolactone, potassium chloride, sodium chloride 0.9% flush — which
+the Summarization Agent renders as prose.
+
+Two more, from the follow-up agent:
+
+```cypher
+-- "What are the various medical histories of the patient?"
+MATCH (n:MedicalCondition)-[r:HAS_MEDICAL_HISTORY]-(m) RETURN n, r, m LIMIT 100;
+
+-- "What risk is associated with a procedure?"
+MATCH (n:Procedure)-[r:HAS_TREATMENT_PLAN]-(m) RETURN n, r, m LIMIT 100;
+```
+
+## Visualisation
+
+An Electron.js and NetworkX interface presents patient data as a timeline, with
+filtering, zooming and node highlighting.
