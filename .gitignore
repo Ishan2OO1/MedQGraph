@@ -1,0 +1,28 @@
+# Credentials
+.env
+.env.*
+!.env.example
+
+# MIMIC-IV is credentialed-access data under a PhysioNet DUA.
+# Nothing derived from it may be committed.
+data/
+*.csv
+*.tsv
+*.parquet
+mimic*/
+
+# Neo4j dumps are derived data for the same reason
+*.dump
+*.db
+
+# Notebook outputs can contain patient rows. Clear them before committing.
+.ipynb_checkpoints/
+
+# Large media - see media/README.md
+*.mp4
+!media/demo-web.mp4
+
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store

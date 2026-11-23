@@ -1,0 +1,62 @@
+<?xml version="1.0" ?>
+<mxfile host="app.diagrams.net" modified="2024-02-04T00:00:00.000Z" agent="MedQGraph" version="22.0.0" type="device">
+  <diagram id="medqgraph-data-pipeline" name="Data Creation Pipeline">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="2" value="MedQGraph Data Creation Pipeline" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2C3E50;strokeColor=#000000;strokeWidth=2;fontColor=#FFFFFF;fontSize=18;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="150" y="40" width="500" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="STAGE 1: MIMIC-IV Source Tables" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="250" y="130" width="300" height="30" as="geometry"/>
+        </mxCell>
+        <mxCell id="10" value="&amp;lt;b&amp;gt;patients&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;subject_id\ngender, age, race" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E74C3C;strokeColor=#000000;strokeWidth=2;fontColor=#FFFFFF;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="80" y="180" width="140" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="11" value="&amp;lt;b&amp;gt;admissions&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;hadm_id\nadm_type, location" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E67E22;strokeColor=#000000;strokeWidth=2;fontColor=#FFFFFF;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="240" y="180" width="140" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="12" value="&amp;lt;b&amp;gt;prescriptions&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;drug, dose\nroute" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F39C12;strokeColor=#000000;strokeWidth=2;fontColor=#FFFFFF;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="400" y="180" width="140" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="13" value="&amp;lt;b&amp;gt;labevents&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;test_name\nspecimen" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#27AE60;strokeColor=#000000;strokeWidth=2;fontColor=#FFFFFF;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="560" y="180" width="140" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="14" value="&amp;lt;b&amp;gt;microbiologyevents&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;organism\nantibiotics" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#3498DB;strokeColor=#000000;strokeWidth=2;fontColor=#FFFFFF;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="80" y="310" width="140" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="15" value="&amp;lt;b&amp;gt;diagnoses_icd&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;ICD codes\nseverity" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#9B59B6;strokeColor=#000000;strokeWidth=2;fontColor=#FFFFFF;fontSize=10" vertex="1" parent="1">
+          <mxGeometry x="240" y="310" width="140" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="20" value="&amp;lt;b&amp;gt;SQL JOIN Operations&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;Step 1: patients JOIN admissions (subject_id)&amp;lt;br&amp;gt;Step 2: + prescriptions (hadm_id)&amp;lt;br&amp;gt;Step 3: + labevents (hadm_id)&amp;lt;br&amp;gt;Step 4: + microbiology (hadm_id)&amp;lt;br&amp;gt;Step 5: + diagnoses (hadm_id)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ECF0F1;strokeColor=#C0392B;strokeWidth=3;fontColor=#000000;fontSize=10;align=center" vertex="1" parent="1">
+          <mxGeometry x="200" y="460" width="400" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="30" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#E74C3C" edge="1" parent="1" source="10" target="20">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="31" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#E67E22" edge="1" parent="1" source="11" target="20">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="32" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#F39C12" edge="1" parent="1" source="12" target="20">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="33" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#27AE60" edge="1" parent="1" source="13" target="20">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="34" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#3498DB" edge="1" parent="1" source="14" target="20">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="35" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#9B59B6" edge="1" parent="1" source="15" target="20">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="40" value="&amp;lt;b&amp;gt;FINAL INTEGRATED DATASET&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;&amp;lt;br&amp;gt;&amp;lt;b&amp;gt;230,000 Records × 31 Features&amp;lt;/b&amp;gt;&amp;lt;br&amp;gt;45,127 Patients | 78,043 Admissions&amp;lt;br&amp;gt;Patient + Admission + All Clinical Events" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ABC9C;strokeColor=#000000;strokeWidth=3;fontColor=#FFFFFF;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="150" y="660" width="500" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="41" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=4;strokeColor=#2C3E50;endArrow=classic;endFill=1" edge="1" parent="1" source="20" target="40">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
