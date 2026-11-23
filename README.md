@@ -131,22 +131,21 @@ See [`src/README.md`](src/README.md).
 
 ## Credits
 
-MedQGraph has been worked on by two overlapping groups, and this repository
-separates what each produced.
+Built by **Ishan Chaudhary** and **Isaac Premkumar** as graduate research at
+Northeastern University.
 
-**Poster and system design** — *MedQGraph: Temporal Medical Knowledge Graphs for
-AI-Driven Healthcare Insights*: Isaac Premkumar, Ishan Chaudhary, Arasu Narayan,
-Divya Chaudhary.
+<!-- TODO: one honest sentence saying which parts were yours and which were
+     Isaac's. Your portfolio says you "architected" MedQGraph; this is the line
+     that has to support it. -->
 
-**Prototype implementation** — the Electron client, the Neo4j loader and the
-query layer were written principally by Nandini Bommireddy and Lavanya
-Vijayakrishnan, with Isaac Ritharson P, in
-[lavanyavijayk/MedQGraph](https://github.com/lavanyavijayk/MedQGraph).
+The poster in `docs/` carries its own author list — Isaac Premkumar, Ishan
+Chaudhary, Arasu Narayan and Divya Chaudhary — and that remains the
+citation for the poster itself.
 
-<!-- TODO: state your own contribution in one honest sentence, and put it here.
-     Your portfolio says you "architected" MedQGraph; this is the line that has
-     to support it. The design artifacts in docs/ are yours. Any code that goes
-     into src/ should be code you wrote. -->
+<!-- NOTE: this repository holds design artifacts and documentation, no code.
+     If you later move implementation into src/ that came from the team
+     repository, Nandini Bommireddy and Lavanya Vijayakrishnan wrote most of it
+     and need crediting here. See src/README.md. -->
 
 <!-- NOTE: a full paper describing this system is under anonymous review. It is
      deliberately not included in this repository and not cited above. Check the
